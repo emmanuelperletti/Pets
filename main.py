@@ -10,5 +10,10 @@ if __name__ == "__main__":
     
     d = Breed("Berger Créole")    
     print(d.get_id())
-    p = Pet("Prada", "20181025", Gender.FEMALE, d)
-    p.save()
+    # c = Pet("Prada","20181025", Gender.FEMALE,d)
+    # c.save()
+    p = Pet.load(17)
+    print(p.name)
+
+    
+    

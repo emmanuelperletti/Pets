@@ -14,6 +14,9 @@ class Pet(Model):
     breed: Breed
     gender: Gender    
     events = []
+    table = "pet"
+    pk = "id"
+
 
     def __init__(self, name:str, birthdate, gender:Gender, breed):
         assert len(name) >= 2
@@ -33,7 +36,8 @@ class Pet(Model):
         return f"{self.name} ({self.breed.name})"
 
     def get_insert_statement(self):
-        return f"INSERT INTO pet (name,birthdate,gender,breed) VALUES ('{self.name}','{self.birthdate}', {self.gender.value}, {self.breed.get_id()} )"
+        bd = self.birthdate.strftime("%Y%m%d")
+        return f"INSERT INTO pet (name,birthdate,gender,breed) VALUES ('{self.name}','{bd}', {self.gender.value}, {self.breed.get_id()} )"
 
     def get_delete_statement(self):
         return super().get_delete_statement()
@@ -47,6 +51,25 @@ class Pet(Model):
     def add_event(self, event: Event):
         self.events.append(event)
 
+
     @property
     def breed_name(self):
         return self.breed.name
+
+    ###WIP
+    @classmethod
+    def load(cls, key_value):
+        if type(key_value) is str:
+            operator = 'like'
+            key = 'name'
+        if type(key_value) is int:
+            operator = '='
+            key = 'id'
+        res = Model.get_by_key(cls.table,key,key_value,operator)
+        print(res)
+        if res:
+            return Pet(res[0]['name'],res[0]['birthdate'], res[0]['gender'], res[0]['breed'])
+        else:
+            pass
+        
+    ###ENDWIP

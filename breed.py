@@ -12,16 +12,17 @@ class Breed(Model):
         if type(key) is str:
             self.name = key
             res = self.get_by_name()
+            print(res)
             if res:
-                self.set_id(res[0])
+                self.set_id(res[0][0])
             else:
                 self.save()
         elif type(key) is int:
             res = self.get_by_pk(key)
             if res:
                 print(res)
-                self.name = res[0]
-                self.set_id(res[1])
+                self.name = res[0][0]
+                self.set_id(res[0][1])
 
    
 
