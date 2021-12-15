@@ -9,7 +9,7 @@ if __name__ == "__main__":
     DbManager.init_tables()
     
     d = Breed("Berger Créole")    
-    print(d.get_id())
+    print(d.id)
     # c = Pet("Prada","20181025", Gender.FEMALE,d)
     # c.save()
     p = Pet.load(17)

@@ -20,7 +20,7 @@ class Pet(Model):
 
     def __init__(self, name:str, birthdate, gender:Gender, breed):
         assert len(name) >= 2
-        self.set_id(-1)
+        self.id =-1
         self.name = name
         if type(birthdate) is str:
             self.birthdate = datetime.strptime(birthdate,"%Y%m%d")
@@ -37,7 +37,7 @@ class Pet(Model):
 
     def get_insert_statement(self):
         bd = self.birthdate.strftime("%Y%m%d")
-        return f"INSERT INTO pet (name,birthdate,gender,breed) VALUES ('{self.name}','{bd}', {self.gender.value}, {self.breed.get_id()} )"
+        return f"INSERT INTO pet (name,birthdate,gender,breed) VALUES ('{self.name}','{bd}', {self.gender.value}, {self.breed.id} )"
 
     def get_delete_statement(self):
         return super().get_delete_statement()
@@ -66,7 +66,6 @@ class Pet(Model):
             operator = '='
             key = 'id'
         res = Model.get_by_key(cls.table,key,key_value,operator)
-        print(res)
         if res:
             return Pet(res[0]['name'],res[0]['birthdate'], res[0]['gender'], res[0]['breed'])
         else:

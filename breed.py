@@ -8,13 +8,13 @@ class Breed(Model):
     def __init__(self, key):
         self.table = "breed"
         self.pk = "id"
-        self.set_id(-1)
+        self.id = -1
         if type(key) is str:
             self.name = key
             res = self.get_by_name()
             print(res)
             if res:
-                self.set_id(res[0][0])
+                self.id = res[0][0]
             else:
                 self.save()
         elif type(key) is int:
@@ -22,7 +22,7 @@ class Breed(Model):
             if res:
                 print(res)
                 self.name = res[0][0]
-                self.set_id(res[0][1])
+                self.id = res[0][1] 
 
    
 
@@ -37,7 +37,7 @@ class Breed(Model):
         return f"INSERT INTO breed (name) VALUES ('{self.name}')"
 
     def get_update_statement(self):
-        return f"UPDATE breed set name = '{self.name}' where breed.id = {self.get_id()}"
+        return f"UPDATE breed set name = '{self.name}' where breed.id = {self.id}"
 
     def get_delete_statement(self):
         return f"DELETE FROM breed WHERE breed.id = {self.get_id}"

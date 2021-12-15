@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 import sqlite3
-from sqlite3.dbapi2 import PARSE_DECLTYPES
-from typing import ContextManager
 
 
 class Model(ABC):
@@ -23,7 +21,7 @@ class Model(ABC):
             if operator.upper().strip() == "LIKE":
                 key_criteria = f"'{key_value}'"
             stmt = f"SELECT * FROM {table} WHERE {key} {operator} {key_criteria}"
-            print("get_by_key",stmt)
+            print("get_by_key", stmt)
             res = cursor.execute(stmt)
             return res.fetchall()
 
@@ -56,12 +54,6 @@ class Model(ABC):
     def get_insert_statement(self):
         ...
 
-    def get_id(self):
-        return self.__id
-
-    def set_id(self, id):
-        self.__id = id
-
     @abstractmethod
     def get_update_statement(self):
         ...
@@ -77,20 +69,30 @@ class Model(ABC):
     def save(self):
         with sqlite3.connect(DbManager.db) as conn:
             conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            _id = self.get_id()
-            print(_id)
-            stmt = self.get_insert_statement() if _id == -1 else self.get_update_statement()
+            cursor = conn.cursor()               
+            stmt = (
+                self.get_insert_statement()
+                if self.id == -1
+                else self.get_update_statement()
+            )
             print(stmt)
             cursor.execute(stmt)
             conn.commit()
             print(f"last id: {cursor.lastrowid}")
-            self.set_id(cursor.lastrowid)
+            self.id = cursor.lastrowid
+
+    @property
+    def id(self):
+        return self.__id
+
+    @id.setter
+    def id(self, id):
+        self.__id = id
 
 
 class DbManager:
 
-    db = 'test.db'
+    db = "test.db"
 
     ###################
     # TABLE - METHODS #
@@ -98,7 +100,7 @@ class DbManager:
 
     @classmethod
     def create_table_version(cls):
-        """ creates the table storing the data tables versions """
+        """creates the table storing the data tables versions"""
         stmt = "CREATE TABLE IF NOT EXISTS table_version ('name' TEXT, version INTEGER)"
         with sqlite3.connect(DbManager.db) as sql:
             cursor = sql.cursor()
@@ -107,11 +109,13 @@ class DbManager:
 
     @classmethod
     def update_table_version(cls, table, version):
-        """ sets the version of a table to a new version """
+        """sets the version of a table to a new version"""
         if cls.get_table_version(table) == 0:
             stmt = f"INSERT INTO table_version (name, version) VALUES ('{table}',{version})"
         else:
-            stmt = f"UPDATE table_version SET version = {version} WHERE name = '{table}'"
+            stmt = (
+                f"UPDATE table_version SET version = {version} WHERE name = '{table}'"
+            )
         with sqlite3.connect(DbManager.db) as sql:
             cursor = sql.cursor()
             cursor.execute(stmt)
@@ -119,17 +123,20 @@ class DbManager:
 
     @classmethod
     def get_table_version(cls, table):
-        """ returns the current table version """
+        """returns the current table version"""
         stmt = f"SELECT version FROM table_version WHERE name = '{table}'"
         with sqlite3.connect(DbManager.db) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             res = cursor.execute(stmt).fetchone()
-            return res['version'] if res else 0
+            return res["version"] if res else 0
 
     @classmethod
     def init_tables(cls):
-        """ creates and updates the tables in the database """
+        """
+        creates and updates the tables in the database
+        TODO : get table description and modifications from an external file.
+        """
         # Ensures the table_version table exists
         cls.create_table_version()
 
@@ -176,7 +183,7 @@ class DbManager:
 
     @classmethod
     def save(cls, stmt: str):
-        """ Executes the statement in the parameters. If "INSERT" returns the last row id"""
+        """Executes the statement in the parameters. If "INSERT" returns the last row id"""
         with sqlite3.connect(DbManager.db) as conn:
             cursor = conn.cursor()
             res = cursor.execute(stmt)
@@ -188,13 +195,13 @@ class DbManager:
 
     @classmethod
     def exec(cls, stmt: str):
-        """ Execute the statement and returns the recordset if it's a select statement"""
+        """Executes the statement and returns the recordset if it's a select statement"""
         print(stmt)
         with sqlite3.connect(DbManager.db) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute(stmt)
-            if stmt.upper().strip().startswith('SELECT'):
+            if stmt.upper().strip().startswith("SELECT"):
                 res = cursor.fetchall()
                 return res
             else:
